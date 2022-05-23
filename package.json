@@ -8,6 +8,7 @@
     "packages/*"
   ],
   "scripts": {
-    "start": "lerna run start"
+    "start": "lerna run start",
+    "init-project": "lerna exec npm install"
   }
 }
