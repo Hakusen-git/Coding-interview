@@ -8,6 +8,18 @@ export const CREATE_TODO = gql`
   }
 `;
 
+export const UPDATE_TODO = gql`
+  mutation Mutation($input: TodoInput!, $updateTodoItemId: Int!) {
+    updateTodoItem(input: $input, id: $updateTodoItemId) {
+      id
+      createdAt
+      title
+      completed
+      completedAt
+    }
+  }
+`;
+
 export const GET_ALL_TODO = gql`
   query {
     getTodoItems {
@@ -24,6 +36,18 @@ export const NEW_TO_DO_SUBSCRIPTION = gql`
     newTodoAdded {
       id
       title
+      createdAt
+      completed
+      completedAt
+    }
+  }
+`;
+
+export const UPDATE_TO_DO_SUBSCRIPTION = gql`
+  subscription Subscription {
+    newTodoUpdate {
+      title
+      id
       createdAt
       completed
       completedAt

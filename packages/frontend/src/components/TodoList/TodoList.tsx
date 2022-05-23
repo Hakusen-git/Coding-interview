@@ -1,9 +1,11 @@
-import { useQuery, useSubscription } from "@apollo/client";
+import { useMutation, useQuery, useSubscription } from "@apollo/client";
 import { Card, Checkbox, CircularProgress, Grid } from "@mui/material";
-import React, { ReactElement } from "react";
+import React, { ReactElement, useState } from "react";
 import {
   GET_ALL_TODO,
   NEW_TO_DO_SUBSCRIPTION,
+  UPDATE_TODO,
+  UPDATE_TO_DO_SUBSCRIPTION,
 } from "../../hooks/todos/gqlCalls";
 
 interface Todo {
@@ -20,6 +22,27 @@ interface TodoData {
 
 export const TodoList = (): ReactElement => {
   const { loading, data } = useQuery<TodoData>(GET_ALL_TODO);
+
+  const [updateTodoItem, { error }] = useMutation(UPDATE_TODO, {
+    refetchQueries: [GET_ALL_TODO, "GetTodoItems"],
+  });
+
+  const handleCompleteChange: any = (
+    event: React.ChangeEvent<HTMLInputElement>,
+    item: Todo
+  ): void => {
+    updateTodoItem({
+      variables: {
+        input: {
+          title: item.title,
+          completed: !item.completed,
+          createdAt: item.createdAt,
+          completedAt: new Date(),
+        },
+        updateTodoItemId: item.id,
+      },
+    });
+  };
 
   useSubscription<Todo>(NEW_TO_DO_SUBSCRIPTION, {
     onSubscriptionData: ({ client, subscriptionData }) => {
@@ -48,6 +71,37 @@ export const TodoList = (): ReactElement => {
     },
   });
 
+  useSubscription<Todo>(UPDATE_TO_DO_SUBSCRIPTION, {
+    onSubscriptionData: ({ client, subscriptionData }) => {
+      const todos = client.cache.readQuery<TodoData>({
+        query: GET_ALL_TODO,
+      });
+
+      const newTodo: Todo = {
+        id: subscriptionData.data?.id,
+        title: subscriptionData.data?.title,
+        createdAt: subscriptionData.data?.createdAt,
+        completedAt: subscriptionData.data?.completedAt,
+        completed: subscriptionData.data?.completed,
+      };
+
+      const newTodoItems = todos?.getTodoItems.map((item) => {
+        if (item.id === newTodo.id) {
+          return newTodo;
+        } else {
+          return item;
+        }
+      });
+
+      client.cache.writeQuery({
+        query: GET_ALL_TODO,
+        data: {
+          getTodoItems: newTodoItems,
+        },
+      });
+    },
+  });
+
   return (
     <div>
       {loading ? (
@@ -65,7 +119,10 @@ export const TodoList = (): ReactElement => {
                     alignItems={"center"}
                   >
                     <Grid item md={1} xs={3}>
-                      <Checkbox />
+                      <Checkbox
+                        checked={item.completed}
+                        onChange={(e) => handleCompleteChange(e, item)}
+                      />
                     </Grid>
                     <Grid item md={9} xs={4}>
                       <p>{item.title}</p>
