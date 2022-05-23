@@ -85,7 +85,8 @@ export class TodoResolver {
   @Mutation(() => Todo)
   async updateTodoItem(
     @Arg("id", () => Int) id: number,
-    @Arg("input", () => TodoInput) input: TodoInput
+    @Arg("input", () => TodoInput) input: TodoInput,
+    @PubSub("TODO_UPDATE") publish: Publisher<Todo>
   ): Promise<Todo> {
     const todo = this.todoItems.find((item) => item.id === id);
     if (!todo) {
@@ -98,6 +99,7 @@ export class TodoResolver {
     this.todoItems = this.todoItems.map((item) =>
       item.id === id ? updatedTodo : item
     );
+    publish(updatedTodo);
     return updatedTodo;
   }
 
@@ -106,6 +108,14 @@ export class TodoResolver {
     topics: "NEW_TODO_ADDED",
   })
   newTodoAdded(@Root() todo: Todo): Todo {
+    return todo;
+  }
+
+  // Subscription, listen to creation of todo items
+  @Subscription(() => Todo, {
+    topics: "TODO_UPDATE",
+  })
+  newTodoUpdate(@Root() todo: Todo): Todo {
     return todo;
   }
 }
