@@ -27,6 +27,7 @@ export const GET_ALL_TODO = gql`
       title
       completed
       createdAt
+      completedAt
     }
   }
 `;

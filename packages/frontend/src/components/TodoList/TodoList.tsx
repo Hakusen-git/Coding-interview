@@ -31,13 +31,14 @@ export const TodoList = (): ReactElement => {
     event: React.ChangeEvent<HTMLInputElement>,
     item: Todo
   ): void => {
+    const completedAt = !item.completed ? new Date() : null;
     updateTodoItem({
       variables: {
         input: {
           title: item.title,
           completed: !item.completed,
           createdAt: item.createdAt,
-          completedAt: new Date(),
+          completedAt: completedAt,
         },
         updateTodoItemId: item.id,
       },
@@ -128,10 +129,22 @@ export const TodoList = (): ReactElement => {
                       <p>{item.title}</p>
                     </Grid>
                     <Grid item md={2} xs={5}>
-                      {item.createdAt && (
-                        <p>{`Created on ${new Date(
-                          item.createdAt
-                        ).toLocaleDateString()}`}</p>
+                      {item.completed ? (
+                        item.completedAt && (
+                          <p>
+                            {`Completed on ${new Date(
+                              item.completedAt
+                            ).toLocaleDateString()}`}
+                          </p>
+                        )
+                      ) : item.createdAt ? (
+                        <p>
+                          {`Created on ${new Date(
+                            item.createdAt
+                          ).toLocaleDateString()}`}
+                        </p>
+                      ) : (
+                        <p>Nothing can be displayed</p>
                       )}
                     </Grid>
                   </Grid>
