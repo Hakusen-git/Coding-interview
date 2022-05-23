@@ -1,6 +1,9 @@
 # dependencies
 /node_modules
 
+/packages/frontend/node_modules
+/packages/server/node_modules
+
 # production
 /build
 
